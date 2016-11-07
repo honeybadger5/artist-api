@@ -3,6 +3,7 @@ package BackendMashupExercise.MusicAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import BackendMashupExercise.MusicAPI.dto.musicbrainz.Artist;
@@ -21,8 +22,13 @@ public class MusicBrainzService {
 
 		final String musicBrainzUrl = "http://musicbrainz.org/ws/2/artist/"+mbid+"?&fmt=json&inc=url-rels+release-groups";
 		logger.info("Requesting artist info, URL="+musicBrainzUrl);
-		Artist artist = restTemplate.getForObject(musicBrainzUrl, Artist.class);
-
+		Artist artist = null;
+		try{
+			artist = restTemplate.getForObject(musicBrainzUrl, Artist.class);
+		} catch (HttpClientErrorException e) {
+			logger.error(e.getMessage());
+			throw e;
+		}
 		return artist;
 	}
 }
