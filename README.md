@@ -25,7 +25,7 @@ mvn test
 + **If web service is deployed on a tomcat server** a valid request will look like this: GET http://localhost:8080/MusicAPI-0.0.1-SNAPSHOT/mashup-api/?mbid=5700dcd4-c139-4f31-aa3e-6382b9af9032
 
 **Developed using**
-Java 8, Open JDK
-Maven v.3.3.9
-SpringBoot v1.4.1.RELEASE
-Tomcat v. 8
+- Java 8 Open JDK
+- Maven v.3.3.9
+- SpringBoot v1.4.1.RELEASE
+- Tomcat v. 8
