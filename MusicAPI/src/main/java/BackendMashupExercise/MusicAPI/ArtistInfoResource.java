@@ -11,15 +11,14 @@ import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import BackendMashupExercise.MusicAPI.dto.aggregatedresponse.Album;
@@ -35,6 +34,15 @@ import BackendMashupExercise.MusicAPI.dto.musicbrainz.Artist;
 public class ArtistInfoResource {
 
 	private static final Logger logger = LoggerFactory.getLogger(ArtistInfoResource.class);
+	
+	@Autowired
+	private MusicBrainzService musicBrainzService;
+
+	@Autowired
+	private WikipediaService wikipediaService;
+	
+	@Autowired
+	private CoverArtService coverArtService;
 	
 	/*
 	 * TODO:
@@ -69,7 +77,6 @@ public class ArtistInfoResource {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		}
 		
-		MusicBrainzService musicBrainzService = new MusicBrainzService(new RestTemplate());
 		Artist artistInfo = null;
 		
 		try {
@@ -82,14 +89,12 @@ public class ArtistInfoResource {
 		List<Relation> relations = artistInfo.getRelations();
 		Predicate<Relation> predicate = r-> r.getType().equals("wikipedia");
 		Relation relation = relations.stream().filter(predicate).findFirst().get();
-		WikipediaService wikipediaService = new WikipediaService(new AsyncRestTemplate());
 		DeferredResult<String> description = null;
 		if(relation != null) {
 			description = wikipediaService.getArtistDescription(relation.getUrl().getResource());
 		}
 
 		//Get cover art for all albums.
-		CoverArtService coverArtService = new CoverArtService(new AsyncRestTemplate());
 		Map<String, DeferredResult<CoverArt>> coverArtMap = new HashMap<String, DeferredResult<CoverArt>>();
 		Iterator<MBAlbum> albumIterator = artistInfo.getReleasegroups().iterator();
 		
