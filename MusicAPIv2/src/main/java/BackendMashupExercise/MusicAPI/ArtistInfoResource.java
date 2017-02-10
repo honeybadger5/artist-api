@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -30,7 +31,8 @@ import BackendMashupExercise.MusicAPI.dto.musicbrainz.Relation;
 import BackendMashupExercise.MusicAPI.dto.musicbrainz.Artist;
 
 
-@RestController("/mashup-api")
+//@RestController("/mashup-api")
+@Component
 public class ArtistInfoResource {
 
 	private static final Logger logger = LoggerFactory.getLogger(ArtistInfoResource.class);
@@ -40,40 +42,36 @@ public class ArtistInfoResource {
 
 	@Autowired
 	private WikipediaService wikipediaService;
-	
+
 	@Autowired
 	private CoverArtService coverArtService;
 	
 	/*
 	 * TODO:
-	 * Severe stuff:
-	 * 1. Obviously the queryApi method is way too large and needs to be broken down
-	 * into several methods with designated function
-	 * 2. The API cannot yet handle rate limiting on the underlying services - the only
+	 * - The API cannot yet handle rate limiting on the underlying services - the only
 	 * limitation so far is that asynchronous CoverArt requests from a single request on the api
 	 * is sent with 1 s intervals. But if there are several requests on the mashup api at once, 
 	 * there will be several requests per second to the musicbrainz api, which could cause denied service.
 	 * This could be handled e.g. by having a thread-safe singleton request queue shared by the different request threads.
-	 * 3. More tests need to be implemented, e.g. CoverArtService lacks tests
-	 * 4. Find all places where error checks are needed and implement them. E.g. missed null pointers, more handling of
+	 * - More tests need to be implemented, e.g. CoverArtService lacks tests
+	 * - Find all places where error checks are needed and implement them. E.g. missed null pointers, more handling of
 	 *   bad requests
 	 * 
 	 * - Other stuff:
 	 * - Instead of using AsyncRestTemplate inside services, look at using @Async to thread whole service instead
 	 * - Edit User-agent in http header (required by underlying web services)
-	 * - The queryApi method should have its own part of the url, e.g. /mashup-api/<get-artist-info>/?mbid=... in case
-	 *   more requestMapping methods needs to be be added later
 	 * - Configuration for the logger, set trace levels
 	 * - The data classes should have toString methods
 	 * - Document the api
 	 */
-	@RequestMapping(method = RequestMethod.GET, produces = "application/json")
-	ResponseEntity<ArtistInfo> queryApi(@RequestParam("mbid") String mbid) {
-		
+
+	public ResponseEntity<ArtistInfo> getArtistInfoResponse(String mbid) {
+
 		long start = System.currentTimeMillis();
-		logger.info("Incoming GET req, mbid: "+mbid);
-		
+		logger.info("Incoming GET req, mbid: " + mbid);
+
 		if (mbid==null || mbid.isEmpty()) {
+			logger.info("ERROR: missing mbid");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		}
 
